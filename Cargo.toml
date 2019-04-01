@@ -1,0 +1,23 @@
+[package]
+name = "cryptonote-raw-crypto"
+version = "0.1.0"
+authors = ["calidion <calidion@gmail.com>"]
+edition = "2018"
+license = "GPL-3.0-or-later"
+description = "Cryptography Primitives for Cryptonote"
+
+build = "src/build.rs"
+
+[dependencies]
+libc = "0.2.45"
+rand = "0.6"
+
+
+[build-dependencies]
+cc = "1.0.26"
+bindgen = "0.45.0"
+
+
+[badges]
+travis-ci = { repository = "cryptonote-rust/raw-crypto", branch = "master" }
+codecov = { repository = "cryptonote-rust/raw-crypto", branch = "master", service = "github" }
