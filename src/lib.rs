@@ -6,7 +6,6 @@ const CHACHA_IV_SIZE: usize = 8;
 extern "C" {
   fn chacha8(data: *const u8, length: usize, key: *const u8, iv: *const u8, cipher: *mut u8);
   fn cn_slow_hash(data: *const u8, length: usize, hash: *mut u8, variant: usize, prehashed: usize);
-
 }
 
 pub struct ChachaKey {
