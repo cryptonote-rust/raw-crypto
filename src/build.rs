@@ -1,8 +1,6 @@
 extern crate bindgen;
 extern crate cc;
 
-use std::env;
-
 fn main() {
     let mut build = cc::Build::new();
     let tool = build.get_compiler();
@@ -32,5 +30,6 @@ fn main() {
         .file("ext/skein.c")
         .file("ext/slow-hash.c")
         .file("ext/tree-hash.c")
+        .file("ext/crypto.c")
         .compile("crypto");
 }
