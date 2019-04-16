@@ -7,6 +7,7 @@ extern "C" {
   fn chacha8(data: *const u8, length: usize, key: *const u8, iv: *const u8, cipher: *mut u8);
   fn cn_slow_hash(data: *const u8, length: usize, hash: *mut u8, variant: usize, prehashed: usize);
   fn secret_key_to_public_key(secret_key: *const u8, public_key: *mut u8) -> bool;
+  fn random_scalar(secret_key: *mut u8);
 }
 
 pub struct ChachaKey {
@@ -68,6 +69,14 @@ impl ChachaKey {
   }
 }
 
+pub fn generate_secret_key() -> [u8; 32] {
+  let mut secrete_key: [u8; 32] = [0; 32];
+  unsafe {
+    random_scalar(secrete_key.as_mut_ptr());
+  }
+  secrete_key
+}
+
 pub fn secret_to_public(secret_key: &[u8; 32]) -> [u8; 32] {
   let mut public_key: [u8; 32] = [0; 32];
   unsafe {
@@ -122,5 +131,14 @@ mod tests {
     println!("{:?}", public_key);
     println!("{:?}", public_key);
     assert!(public_key == [81, 76, 248, 201, 237, 192, 109, 39, 58, 159, 67, 13, 120, 203, 91, 70, 36, 216, 162, 222, 0, 100, 243, 152, 32, 48, 89, 129, 252, 169, 180, 36]);
+  }
+
+    #[test]
+  fn should_get_public_key_from_generated_secret_key() {
+    let secret_key = generate_secret_key();
+    let public_key = secret_to_public(&secret_key);
+    println!("{:?}", public_key);
+    println!("{:?}", public_key);
+    assert!(public_key.len() == 32);
   }
 }
