@@ -6,18 +6,18 @@
 void random_scalar(uint8_t *res)
 {
   unsigned char tmp[64];
-  generate_random_bytes(64, tmp);
+  generate_random_bytes_not_thread_safe(64, tmp);
   sc_reduce(tmp);
-  memcpy(&res, tmp, 32);
+  memcpy(res, tmp, 32);
 }
 
-void hash_to_scalar(const uint8_t *data, size_t length, uint8_t * res)
+void hash_to_scalar(const uint8_t *data, size_t length, uint8_t *res)
 {
   cn_fast_hash(data, length, res);
   sc_reduce32(res);
 }
 
-void generate_keys(uint8_t * pub, uint8_t *sec)
+void generate_keys(uint8_t *pub, uint8_t *sec)
 {
   ge_p3 point;
   random_scalar(sec);

@@ -137,7 +137,7 @@ mod tests {
   fn should_get_public_key_from_generated_secret_key() {
     let secret_key = generate_secret_key();
     let public_key = secret_to_public(&secret_key);
-    println!("{:?}", public_key);
+    println!("{:?}", secret_key);
     println!("{:?}", public_key);
     assert!(public_key.len() == 32);
   }
