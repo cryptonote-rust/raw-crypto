@@ -9,6 +9,7 @@ extern "C" {
   fn cn_fast_hash(data: *const u8, length: usize, hash: *mut u8);
   fn secret_key_to_public_key(secret_key: *const u8, public_key: *mut u8) -> bool;
   fn random_scalar(secret_key: *mut u8);
+  fn check_key(public_key: *const u8) -> bool;
 }
 
 pub struct ChachaKey {
@@ -92,6 +93,12 @@ pub fn fast_hash(data: &[u8]) -> [u8; 32] {
   let mut hash: [u8; 32] = [0; 32];
   unsafe { cn_fast_hash(data.as_ptr(), data.len(), hash.as_mut_ptr()) }
   hash
+}
+
+pub fn is_key(data: &[u8]) -> bool {
+  unsafe {
+    return check_key(data.as_ptr());
+  }
 }
 
 #[cfg(test)]
@@ -196,5 +203,6 @@ mod tests {
     println!("{:?}", secret_key);
     println!("{:?}", public_key);
     assert!(public_key.len() == 32);
+    assert!(is_key(&public_key[..]));
   }
 }
