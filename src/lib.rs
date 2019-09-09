@@ -5,14 +5,10 @@ mod scalar;
 
 use consts::*;
 
-
 extern "C" {
   fn chacha8(data: *const u8, length: usize, key: *const u8, iv: *const u8, cipher: *mut u8);
   fn cn_slow_hash(data: *const u8, length: usize, hash: *mut u8, variant: usize, prehashed: usize);
   fn cn_fast_hash(data: *const u8, length: usize, hash: *mut u8);
-  fn secret_key_to_public_key(secret_key: *const u8, public_key: *mut u8) -> bool;
-  fn random_scalar(secret_key: *mut u8);
-  fn check_public_key(public_key: *const u8) -> bool;
   fn check_ring_signature(
     prefix_hash: *const u8,
     image: *const u8,
@@ -90,34 +86,10 @@ impl ChachaKey {
   }
 }
 
-pub fn generate_secret_key() -> [u8; 32] {
-  let mut secrete_key: [u8; 32] = [0; 32];
-  unsafe {
-    random_scalar(secrete_key.as_mut_ptr());
-  }
-  secrete_key
-}
-
-pub fn secret_to_public(secret_key: &[u8; 32]) -> [u8; 32] {
-  let mut public_key: [u8; 32] = [0; 32];
-  unsafe {
-    if !secret_key_to_public_key(secret_key.as_ptr(), public_key.as_mut_ptr()) {
-      panic!("Wrong secret key!");
-    }
-  }
-  public_key
-}
-
 pub fn fast_hash(data: &[u8]) -> [u8; 32] {
   let mut hash: [u8; 32] = [0; 32];
   unsafe { cn_fast_hash(data.as_ptr(), data.len(), hash.as_mut_ptr()) }
   hash
-}
-
-pub fn is_key(data: &[u8]) -> bool {
-  unsafe {
-    return check_public_key(data.as_ptr());
-  }
 }
 
 pub fn is_ring_signature(
@@ -162,12 +134,10 @@ pub fn create_ring_signature(
 
 #[cfg(test)]
 mod tests {
+  use super::key::*;
   use super::*;
-  use std::fs::{self, canonicalize, File};
-  use std::io::{self, prelude::*, BufReader};
-  use std::path::PathBuf;
+
   extern crate hex;
-  use std::mem;
 
   #[test]
   fn should_generate_key_and_cipher_contents() {
@@ -208,7 +178,8 @@ mod tests {
       50, 228, 229, 247, 39, 151, 194, 252, 14, 45, 218, 78, 128, 230, 27, 208, 9, 57, 52, 163, 5,
       175, 8, 201, 211, 185, 66, 113, 88, 68, 170, 8,
     ];
-    let public_key = secret_to_public(&secret_key);
+    let mut public_key: [u8; 32] = [0; 32];
+    Key::secret_to_public(&secret_key, &mut public_key);
     println!("{:?}", public_key);
     println!("{:?}", public_key);
     assert!(
@@ -218,7 +189,7 @@ mod tests {
           222, 0, 100, 243, 152, 32, 48, 89, 129, 252, 169, 180, 36
         ]
     );
-    assert!(is_key(&public_key[..]));
+    assert!(Key::check_public_key(&public_key));
   }
 
   #[test]
@@ -263,101 +234,12 @@ mod tests {
 
   #[test]
   fn should_get_public_key_from_generated_secret_key() {
-    let secret_key = generate_secret_key();
-    let public_key = secret_to_public(&secret_key);
+    let secret_key = Key::generate_secret_key();
+    let mut public_key: [u8; 32] = [0; 32];
+    Key::secret_to_public(&secret_key, &mut public_key);
     println!("{:?}", secret_key);
     println!("{:?}", public_key);
     assert!(public_key.len() == 32);
-    assert!(is_key(&public_key[..]));
+    assert!(Key::check_public_key(&public_key));
   }
-
-  // #[test]
-  // fn should_test_crypto_from_file() {
-  //   let path = PathBuf::from("./tests/tests.txt");
-  //   let str = canonicalize(path);
-  //   println!("{:?}", &str);
-  //   let f = File::open(str.unwrap()).unwrap();
-  //   let file = BufReader::new(&f);
-  //   let mut last = String::from("");
-  //   for (num, line) in file.lines().enumerate() {
-  //     let l = line.unwrap();
-  //     let split: Vec<&str> = l.split_whitespace().collect();
-  //     let name = split[0];
-  //     if last != name {
-  //       println!("{:?}", split[0]);
-  //       last = split[0].to_string();
-  //     }
-  //     match name {
-  //       "hash_to_scalar" => {
-  //         println!("{:x?}", split);
-  //         let plain = split[1];
-  //         let expected = hex::decode(split[2]).expect("Error parse expected");
-  //         println!("palin = {}", plain);
-  //         println!("expected = {:x?}", expected);
-  //         let mut data: [u8; 32] = [0; 32];
-  //         scalar_hash(&String::from(plain), &mut data[..]);
-  //         assert_eq!(data, expected[..]);
-  //       }
-  //       "random_scalar" => {
-  //         // println!("{:x?}", split);
-  //         // let mut ec_scalar: [u8; 32] = [0; 32];
-  //         // unsafe {
-  //         //   random_scalar(ec_scalar.as_mut_ptr());
-  //         // }
-  //         // println!("{:x?}", ec_scalar);
-  //       }
-  //       "check_ring_signature" => {
-  //         let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
-  //         // println!("pre hash = {}", split[1]);
-  //         let key_image = hex::decode(split[2]).expect("Error parse key image!");
-  //         // println!("key image = {}", split[2]);
-
-  //         let pubs_count = split[3].parse::<u64>().expect("Error parse integer!");
-  //         // println!("pubs count = {}", split[3]);
-
-  //         let mut pubs: Vec<u8> = vec![];
-  //         for n in 0..pubs_count {
-  //           // println!("{}", n);
-  //           // println!("{}", split[4 + n as usize]);
-  //           let key = hex::decode(split[4 + n as usize]).expect("Error parse public key!");
-  //           // println!("{:x?}", key);
-
-  //           let mut converted_key: [u8; 32] = [0; 32];
-  //           for i in 0..32 {
-  //             // pubs.push(key[i]);
-  //             converted_key[i] = key[i];
-  //           }
-  //           // println!("n = {}", n);
-  //           // println!("n = {:x?}", converted_key);
-  //           pubs.extend(&converted_key);
-  //         }
-
-  //         // println!("pubs.len() = {}", pubs.len());
-  //         // println!("{}", 32 * pubs_count);
-
-  //         assert!(pubs.len() == (32 * pubs_count) as usize);
-
-  //         let sig = hex::decode(split[4 + pubs_count as usize]).expect("Error parse siginatures!");
-  //         // println!("{}", sig.len());
-  //         // println!("{}", pubs_count);
-  //         // let mut siginatures : Vec<[u8; 64]> = vec![];
-  //         // for n in 0..pubs_count {
-  //         //   let mut n_sig : [u8;64] = [0; 64];
-  //         //   for i in 0..64 {
-  //         //     let idx = n * 64 + (i as u64);
-  //         //     n_sig[i] = sig[idx as usize];
-  //         //   }
-  //         //   siginatures
-  //         // }
-
-  //         // println!("{:?}", split);
-  //         // let expected = split[5 + pubs_count as usize] == "true";
-  //         // println!("expected = {}", expected);
-  //         // let actual = is_ring_signature(pre_hash.as_slice(), key_image.as_slice(), pubs.as_slice(), pubs_count as usize, sig.as_slice());
-  //         // assert!(expected == actual);
-  //       }
-  //       _ => {}
-  //     }
-  //   }
-  // }
 }

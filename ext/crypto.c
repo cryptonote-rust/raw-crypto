@@ -47,3 +47,19 @@ int check_public_key(const uint8_t *public_key)
   ge_p3 point;
   return ge_frombytes_vartime(&point, public_key) == 0;
 }
+
+
+  int generate_key_derivation(const uint8_t *key1, const uint8_t *key2, uint8_t *derivation) {
+    ge_p3 point;
+    ge_p2 point2;
+    ge_p1p1 point3;
+    assert(sc_check(key2) == 0);
+    if (ge_frombytes_vartime(&point, key1) != 0) {
+      return false;
+    }
+    ge_scalarmult(&point2, key2, &point);
+    ge_mul8(&point3, &point2);
+    ge_p1p1_to_p2(&point2, &point3);
+    ge_tobytes(derivation, &point2);
+    return true;
+  }

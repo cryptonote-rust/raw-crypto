@@ -32,8 +32,8 @@ impl EllipticCurveScalar {
 #[cfg(test)]
 mod tests {
   use super::*;
-  use std::fs::{self, canonicalize, File};
-  use std::io::{self, prelude::*, BufReader};
+  use std::fs::{canonicalize, File};
+  use std::io::{prelude::*, BufReader};
   use std::path::PathBuf;
   extern crate hex;
   use super::super::key::Key;
@@ -109,26 +109,55 @@ mod tests {
           let private_key = hex::decode(split[2]).expect("Error parse expected");
           let mut generated_public_key: [u8; 32] = [0; 32];
           let mut generated_private_key: [u8; 32] = [0; 32];
-          Key::generate(&mut generated_public_key, &mut generated_private_key);
+          Key::generate_key_pair(&mut generated_public_key, &mut generated_private_key);
           // println!("generated public key: {:0x?}", generated_public_key);
           // println!("generated private key: {:0x?}", generated_private_key);
-          assert!(public_key == generated_public_key);
-          assert!(private_key == generated_private_key);
+          assert!(public_key.as_slice() == generated_public_key);
+          assert!(private_key.as_slice() == generated_private_key);
         }
         "check_key" => {
           let public_key = hex::decode(split[1]).expect("Error parse expected");
+          assert!(public_key.len() == 32);
+          let mut fixed_public_key: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_public_key[i] = public_key[i];
+          }
           let expected = split[2] == "true";
-          assert!(Key::check_public_key(&public_key) == expected);
+          assert!(Key::check_public_key(&fixed_public_key) == expected);
         }
         "secret_key_to_public_key" => {
           let secret_key = hex::decode(split[1]).expect("Error parse expected");
+          let mut fixed_secret_key: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_secret_key[i] = secret_key[i];
+          }
           let expected1 = split[2] == "true";
           let mut public_key: [u8; 32] = [0; 32];
-          let actual1 = Key::secret_to_public(secret_key.as_slice(), &mut public_key);
+          let actual1 = Key::secret_to_public(&fixed_secret_key, &mut public_key);
           assert!(expected1 == actual1);
           if expected1 == true {
             let expected2 = hex::decode(split[3]).expect("Error parse expected");
             assert!(public_key == expected2.as_slice());
+          }
+        }
+        "generate_key_derivation" => {
+          let public_key = hex::decode(split[1]).expect("Error parse expected");
+          let mut fixed_public_key: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_public_key[i] = public_key[i];
+          }
+          let secret_key = hex::decode(split[2]).expect("Error parse expected");
+          let mut fixed_secret_key: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_secret_key[i] = secret_key[i];
+          }
+          let expected1 = split[3] == "true";
+          let derived = Key::derive(&fixed_public_key, &fixed_secret_key);
+          if expected1 {
+            let expected2 = hex::decode(split[4]).expect("Error parse expected");
+            assert!(derived == expected2.as_slice());
+          } else {
+            assert!(derived == [0; 32]);
           }
         }
         "check_ring_signature" => {
