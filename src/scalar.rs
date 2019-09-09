@@ -77,7 +77,6 @@ mod tests {
           assert!(expected == actual)
         }
         "hash_to_scalar" => {
-          println!("{}", split[1]);
           let mut bytes: Vec<u8>;
           if split[1] == "x" {
             bytes = hex::decode("").expect("Error parse scalar");
@@ -86,8 +85,6 @@ mod tests {
           }
           let hash = EllipticCurveScalar::to_hash(bytes.as_slice());
           let expected = hex::decode(split[2]).expect("Error parse expected");
-          println!("{:0x?}", hash);
-          println!("expected: {:0x?}", expected);
           assert!(hash == expected.as_slice());
         }
         "random_scalar" => {
