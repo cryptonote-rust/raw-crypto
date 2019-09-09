@@ -120,6 +120,17 @@ mod tests {
           let expected = split[2] == "true";
           assert!(Key::check_public_key(&public_key) == expected);
         }
+        "secret_key_to_public_key" => {
+          let secret_key = hex::decode(split[1]).expect("Error parse expected");
+          let expected1 = split[2] == "true";
+          let mut public_key: [u8; 32] = [0; 32];
+          let actual1 = Key::secret_to_public(secret_key.as_slice(), &mut public_key);
+          assert!(expected1 == actual1);
+          if expected1 == true {
+            let expected2 = hex::decode(split[3]).expect("Error parse expected");
+            assert!(public_key == expected2.as_slice());
+          }
+        }
         "check_ring_signature" => {
           let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
           // println!("pre hash = {}", split[1]);
