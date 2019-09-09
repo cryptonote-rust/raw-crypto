@@ -115,6 +115,11 @@ mod tests {
           assert!(public_key == generated_public_key);
           assert!(private_key == generated_private_key);
         }
+        "check_key" => {
+          let public_key = hex::decode(split[1]).expect("Error parse expected");
+          let expected = split[2] == "true";
+          assert!(Key::check_public_key(&public_key) == expected);
+        }
         "check_ring_signature" => {
           let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
           // println!("pre hash = {}", split[1]);
