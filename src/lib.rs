@@ -1,5 +1,6 @@
 use rand::Rng;
 mod consts;
+mod key;
 mod scalar;
 
 use consts::*;

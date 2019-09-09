@@ -36,6 +36,7 @@ mod tests {
   use std::io::{self, prelude::*, BufReader};
   use std::path::PathBuf;
   extern crate hex;
+  use super::super::key::Key;
 
   #[test]
   fn should_to_hash() {
@@ -76,17 +77,6 @@ mod tests {
           let actual = EllipticCurveScalar::check(&scalar);
           assert!(expected == actual)
         }
-        "hash_to_scalar" => {
-          let mut bytes: Vec<u8>;
-          if split[1] == "x" {
-            bytes = hex::decode("").expect("Error parse scalar");
-          } else {
-            bytes = hex::decode(split[1]).expect("Error parse scalar");
-          }
-          let hash = EllipticCurveScalar::to_hash(bytes.as_slice());
-          let expected = hex::decode(split[2]).expect("Error parse expected");
-          assert!(hash == expected.as_slice());
-        }
         "random_scalar" => {
           if !executed {
             unsafe {
@@ -100,6 +90,30 @@ mod tests {
           for i in 0..32 {
             assert!(expected[i] == ec_scalar[i]);
           }
+        }
+        "hash_to_scalar" => {
+          let mut bytes: Vec<u8>;
+          if split[1] == "x" {
+            bytes = hex::decode("").expect("Error parse scalar");
+          } else {
+            bytes = hex::decode(split[1]).expect("Error parse scalar");
+          }
+          let hash = EllipticCurveScalar::to_hash(bytes.as_slice());
+          let expected = hex::decode(split[2]).expect("Error parse expected");
+          assert!(hash == expected.as_slice());
+        }
+        "generate_keys" => {
+          // println!("{}", split[1]);
+          // println!("{}", split[2]);
+          let public_key = hex::decode(split[1]).expect("Error parse expected");
+          let private_key = hex::decode(split[2]).expect("Error parse expected");
+          let mut generated_public_key: [u8; 32] = [0; 32];
+          let mut generated_private_key: [u8; 32] = [0; 32];
+          Key::generate(&mut generated_public_key, &mut generated_private_key);
+          // println!("generated public key: {:0x?}", generated_public_key);
+          // println!("generated private key: {:0x?}", generated_private_key);
+          assert!(public_key == generated_public_key);
+          assert!(private_key == generated_private_key);
         }
         "check_ring_signature" => {
           let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
