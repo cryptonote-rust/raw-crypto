@@ -16,10 +16,10 @@ void random_scalar(uint8_t *res)
   memcpy(res, tmp, 32);
 }
 
-void hash_to_scalar(const uint8_t *data, size_t length, uint8_t *res)
+void scalar_to_hash(const uint8_t *data, size_t length, uint8_t *hash)
 {
-  cn_fast_hash(data, length, res);
-  sc_reduce32(res);
+  cn_fast_hash(data, length, hash);
+  sc_reduce32(hash);
 }
 
 void generate_key_pair(uint8_t *pub, uint8_t *sec)

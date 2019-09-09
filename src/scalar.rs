@@ -4,7 +4,7 @@ extern "C" {
   fn setup_random(value: i32);
   fn check_scalar(scalar: *const u8) -> bool;
   fn random_scalar(secret_key: *mut u8);
-  fn hash_to_scalar(data: *const u8, length: usize, res: *mut u8);
+  fn scalar_to_hash(data: *const u8, length: usize, hash: *mut u8);
 }
 
 pub struct EllipticCurveScalar {
@@ -12,7 +12,7 @@ pub struct EllipticCurveScalar {
 }
 
 impl EllipticCurveScalar {
-  pub fn check(scalar: [u8; 32]) -> bool {
+  pub fn check(scalar: &[u8; 32]) -> bool {
     unsafe { return check_scalar(scalar[..].as_ptr()) }
   }
 
@@ -22,10 +22,10 @@ impl EllipticCurveScalar {
     }
   }
 
-  pub fn from(plain: &String) -> [u8; 32] {
-    let mut scalar: [u8; 32] = [0; 32];
-    unsafe { hash_to_scalar(plain.as_ptr(), plain.len(), scalar[..].as_mut_ptr()) }
-    scalar
+  pub fn to_hash(plain: &[u8]) -> [u8; 32] {
+    let mut hash: [u8; 32] = [0; 32];
+    unsafe { scalar_to_hash(plain.as_ptr(), plain.len(), hash.as_mut_ptr()) }
+    hash
   }
 }
 
@@ -36,6 +36,17 @@ mod tests {
   use std::io::{self, prelude::*, BufReader};
   use std::path::PathBuf;
   extern crate hex;
+
+  #[test]
+  fn should_to_hash() {
+    let bytes = hex::decode("2ace").expect("Error parse scalar");
+    let hash = EllipticCurveScalar::to_hash(bytes.as_slice());
+    let expected = hex::decode("427f5090283713a2a8448285f2a22cc8cf5374845766b6370425e2319e40f50d")
+      .expect("Error parse scalar");
+    println!("{:0x?}", hash);
+    println!("expected: 427f5090283713a2a8448285f2a22cc8cf5374845766b6370425e2319e40f50d");
+    assert!(hash == expected.as_slice());
+  }
 
   #[test]
   fn should_test_scalar() {
@@ -56,25 +67,28 @@ mod tests {
       }
       match name {
         "check_scalar" => {
-          println!("{:x?}", split);
           let plain = hex::decode(split[1]).expect("Error parse scalar");
           let expected = split[2] == String::from("true");
           let mut scalar: [u8; 32] = [0; 32];
           for i in 0..32 {
             scalar[i] = plain[i];
           }
-          let actual = EllipticCurveScalar::check(scalar);
+          let actual = EllipticCurveScalar::check(&scalar);
           assert!(expected == actual)
         }
         "hash_to_scalar" => {
-          // println!("{:x?}", split);
-          // let plain = split[1];
-          // let expected = hex::decode(split[2]).expect("Error parse expected");
-          // println!("palin = {}", plain);
-          // println!("expected = {:x?}", expected);
-          // let mut data: [u8; 32] = [0; 32];
-          // scalar_hash(&String::from(plain), &mut data[..]);
-          // assert_eq!(data, expected[..]);
+          println!("{}", split[1]);
+          let mut bytes: Vec<u8>;
+          if split[1] == "x" {
+            bytes = hex::decode("").expect("Error parse scalar");
+          } else {
+            bytes = hex::decode(split[1]).expect("Error parse scalar");
+          }
+          let hash = EllipticCurveScalar::to_hash(bytes.as_slice());
+          let expected = hex::decode(split[2]).expect("Error parse expected");
+          println!("{:0x?}", hash);
+          println!("expected: {:0x?}", expected);
+          assert!(hash == expected.as_slice());
         }
         "random_scalar" => {
           if !executed {
@@ -83,14 +97,9 @@ mod tests {
             }
             executed = true;
           }
-          // println!("{:x?}", split);
           let expected = hex::decode(split[1]).expect("Error parse expected");
-          println!("{:x?}", expected);
           let mut ec_scalar: [u8; 32] = [0; 32];
           EllipticCurveScalar::random(&mut ec_scalar);
-          println!("{:x?}", ec_scalar);
-          // let expected = hex::decode(split[1]).expect("Error parse expected");
-          // println!("{:x?}", expected);
           for i in 0..32 {
             assert!(expected[i] == ec_scalar[i]);
           }
