@@ -1,7 +1,7 @@
 use rand::Rng;
-mod consts;
-mod key;
-mod scalar;
+pub mod consts;
+pub mod key;
+pub mod scalar;
 
 use consts::*;
 

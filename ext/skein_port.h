@@ -32,6 +32,8 @@
 #include <limits.h>
 #include <stdint.h>
 
+#include "util.h"
+
 #ifndef RETURN_VALUES
 #  define RETURN_VALUES
 #  if defined( DLL_EXPORT )

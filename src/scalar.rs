@@ -1,10 +1,9 @@
 use super::consts::*;
 
 extern "C" {
-  fn setup_random(value: i32);
   fn check_scalar(scalar: *const u8) -> bool;
   fn random_scalar(secret_key: *mut u8);
-  fn scalar_to_hash(data: *const u8, length: usize, hash: *mut u8);
+  fn hash_to_scalar(data: *const u8, length: usize, hash: *mut u8);
 }
 
 pub struct EllipticCurveScalar {
@@ -21,10 +20,9 @@ impl EllipticCurveScalar {
       random_scalar(secret_key.as_mut_ptr());
     }
   }
-
   pub fn to_hash(plain: &[u8]) -> [u8; 32] {
     let mut hash: [u8; 32] = [0; 32];
-    unsafe { scalar_to_hash(plain.as_ptr(), plain.len(), hash.as_mut_ptr()) }
+    unsafe { hash_to_scalar(plain.as_ptr(), plain.len(), hash.as_mut_ptr()) }
     hash
   }
 }
@@ -37,6 +35,10 @@ mod tests {
   use std::path::PathBuf;
   extern crate hex;
   use super::super::key::Key;
+
+  extern "C" {
+    fn setup_random(value: i32);
+  }
 
   #[test]
   fn should_to_hash() {
@@ -152,13 +154,55 @@ mod tests {
             fixed_secret_key[i] = secret_key[i];
           }
           let expected1 = split[3] == "true";
-          let derived = Key::derive(&fixed_public_key, &fixed_secret_key);
+          let derived = Key::generate_key_derivation(&fixed_public_key, &fixed_secret_key);
           if expected1 {
             let expected2 = hex::decode(split[4]).expect("Error parse expected");
             assert!(derived == expected2.as_slice());
           } else {
             assert!(derived == [0; 32]);
           }
+        }
+        "derive_public_key" => {
+          println!("{:x?}", split);
+          let derivation = hex::decode(split[1]).expect("Error parse derivation");
+          // println!("{:x?}", derivation);
+          let out_index = split[2].parse::<u32>().unwrap();
+          // println!("{}", out_index);
+
+          let public_key = hex::decode(split[3]).expect("Error parse public key");
+          let expected1 = split[4] == "true";
+          let mut fixed_derivation: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_derivation[i] = derivation[i];
+          }
+
+          let mut fixed_base: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_base[i] = public_key[i];
+          }
+          let derived = Key::derive_public_key(&fixed_derivation, out_index as u64, &fixed_base);
+
+          if (expected1) {
+            let expected2 = hex::decode(split[5]).expect("Error parse expected derived");
+            println!("{:x?}", derived);
+            assert!(expected2.as_slice() == derived);
+          } else {
+            assert!(derived == [0;32]);
+          }
+          // let derived
+          // crypto::key_derivation_t derivation;
+          // size_t output_index;
+          // crypto::public_key_t base;
+          // bool expected1, actual1;
+          // crypto::public_key_t expected2, actual2;
+          // get(input, derivation, output_index, base, expected1);
+          // if (expected1) {
+          //   get(input, expected2);
+          // }
+          // actual1 = derive_public_key(derivation, output_index, base, actual2);
+          // if (expected1 != actual1 || (expected1 && expected2 != actual2)) {
+          //   goto error;
+          // }
         }
         "check_ring_signature" => {
           let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
