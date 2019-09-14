@@ -12,6 +12,7 @@ fn main() {
 
     build.warnings(false);
     build
+        .define("__RUST_RAW_CRYPTO__", Some("1"))
         .file("ext/aesb.c")
         .file("ext/blake256.c")
         .file("ext/crypto-ops-data.c")

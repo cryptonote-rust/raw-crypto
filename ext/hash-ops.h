@@ -4,11 +4,22 @@
 
 #pragma once
 
+#if !defined(__cplusplus)
+
 #include <assert.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#endif 
+
+#if !defined(__RUST_RAW_CRYPTO__)
+
+#include "../common/static_assert.h"
+
+#endif
+
+#if !defined(__cplusplus)
 #include "util.h"
 
 static inline void *padd(void *p, size_t i) {
@@ -38,6 +49,8 @@ static_assert(sizeof(union hash_state) == 200, "Invalid structure size");
 
 void hash_permutation(union hash_state *state);
 void hash_process(union hash_state *state, const uint8_t *buf, size_t count);
+
+#endif
 
 enum {
   HASH_SIZE = 32,
