@@ -58,3 +58,5 @@ void generate_ring_signature(const uint8_t *prefix_hash, const uint8_t *image,
                              uint8_t *sig);
 
 void hash_to_point(const uint8_t *hash, uint8_t *point);
+void hash_to_ec_ex(const uint8_t *hash, uint8_t *ec);
+

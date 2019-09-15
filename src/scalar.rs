@@ -5,6 +5,7 @@ extern "C" {
   fn random_scalar(secret_key: *mut u8);
   fn hash_to_scalar(data: *const u8, length: usize, hash: *mut u8);
   fn hash_to_point(hash: *const u8, point: *mut u8);
+  fn hash_to_ec_ex(hash: *const u8, ec: *mut u8);
 }
 
 pub struct EllipticCurveScalar {
@@ -25,10 +26,16 @@ impl EllipticCurveScalar {
       random_scalar(secret_key.as_mut_ptr());
     }
   }
-  pub fn to_hash(plain: &[u8]) -> [u8; 32] {
+  pub fn to_hash(scalar: &[u8]) -> [u8; 32] {
     let mut hash: [u8; 32] = [0; 32];
-    unsafe { hash_to_scalar(plain.as_ptr(), plain.len(), hash.as_mut_ptr()) }
+    unsafe { hash_to_scalar(scalar.as_ptr(), scalar.len(), hash.as_mut_ptr()) }
     hash
+  }
+
+  pub fn from_hash(hash: &[u8]) -> [u8; 32] {
+    let mut ec: [u8; 32] = [0; 32];
+    unsafe { hash_to_ec_ex(hash.as_ptr(), ec.as_mut_ptr()) }
+    ec
   }
 }
 
@@ -289,6 +296,12 @@ mod tests {
           let hash = hex::decode(split[1]).expect("Error parse prefix hash");
           let expected = hex::decode(split[2]).expect("Error parse public key");
           let actual = EllipticCurvePoint::from_hash(hash.as_slice());
+          assert!(expected == actual);
+        }
+        "hash_to_ec" => {
+          let public_key = hex::decode(split[1]).expect("Error parse prefix hash");
+          let expected = hex::decode(split[2]).expect("Error parse public key");
+          let actual = EllipticCurveScalar::from_hash(public_key.as_slice());
           assert!(expected == actual);
         }
         _ => {}

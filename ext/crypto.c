@@ -24,11 +24,13 @@ typedef struct
   } ab[];
 } rs_comm;
 
-int check_scalar(uint8_t * scalar) {
+int check_scalar(uint8_t *scalar)
+{
   return sc_check(scalar) == 0;
 }
 
-int check_public_key(const uint8_t *public_key) {
+int check_public_key(const uint8_t *public_key)
+{
   ge_p3 point;
   return ge_frombytes_vartime(&point, public_key) == 0;
 }
@@ -478,8 +480,16 @@ void generate_ring_signature(const uint8_t *prefix_hash, const uint8_t *image,
                              (const public_key_t *const *)pubs, pubs_count, sec, sec_index, sig);
 }
 
-void hash_to_point(const uint8_t *h, uint8_t *res) {
+void hash_to_point(const uint8_t *h, uint8_t *res)
+{
   ge_p2 point;
   ge_fromfe_frombytes_vartime(&point, h);
   ge_tobytes(res, &point);
+}
+
+void hash_to_ec_ex(const uint8_t *hash, uint8_t *res)
+{
+  ge_p3 tmp;
+  hash_to_ec(hash, (uint8_t *)&tmp);
+  ge_p3_tobytes(res, &tmp);
 }
