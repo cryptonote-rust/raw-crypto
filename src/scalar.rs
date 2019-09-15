@@ -4,9 +4,14 @@ extern "C" {
   fn check_scalar(scalar: *const u8) -> bool;
   fn random_scalar(secret_key: *mut u8);
   fn hash_to_scalar(data: *const u8, length: usize, hash: *mut u8);
+  fn hash_to_point(hash: *const u8, point: *mut u8);
 }
 
 pub struct EllipticCurveScalar {
+  pub data: [u8; CHACHA_IV_SIZE],
+}
+
+pub struct EllipticCurvePoint {
   pub data: [u8; CHACHA_IV_SIZE],
 }
 
@@ -24,6 +29,16 @@ impl EllipticCurveScalar {
     let mut hash: [u8; 32] = [0; 32];
     unsafe { hash_to_scalar(plain.as_ptr(), plain.len(), hash.as_mut_ptr()) }
     hash
+  }
+}
+
+impl EllipticCurvePoint {
+  pub fn from_hash(hash: &[u8]) -> [u8; 32] {
+    let mut point: [u8; 32] = [0; 32];
+    unsafe {
+      hash_to_point(hash.as_ptr(), point.as_mut_ptr());
+    }
+    point
   }
 }
 
@@ -248,8 +263,11 @@ mod tests {
           let secret_key = hex::decode(split[3]).expect("Error parse secret key");
           let expected = hex::decode(split[4]).expect("Error parse expected signature");
 
-          let actual = Key::generate_signature(&to_fixed_32(prefix_hash), &
-          to_fixed_32(public_key), &to_fixed_32(secret_key));
+          let actual = Key::generate_signature(
+            &to_fixed_32(prefix_hash),
+            &to_fixed_32(public_key),
+            &to_fixed_32(secret_key),
+          );
           for i in 0..64 {
             assert!(expected[i] == actual[i]);
           }
@@ -260,59 +278,18 @@ mod tests {
           let signature = hex::decode(split[3]).expect("Error parse secret key");
           let expected = split[4] == "true";
 
-          let actual = Key::check_signature(&to_fixed_32(prefix_hash), &
-          to_fixed_32(public_key), &to_fixed_64(signature));
+          let actual = Key::check_signature(
+            &to_fixed_32(prefix_hash),
+            &to_fixed_32(public_key),
+            &to_fixed_64(signature),
+          );
           assert!(expected == actual);
         }
-        "check_ring_signature" => {
-          let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
-          // println!("pre hash = {}", split[1]);
-          let key_image = hex::decode(split[2]).expect("Error parse key image!");
-          // println!("key image = {}", split[2]);
-
-          let pubs_count = split[3].parse::<u64>().expect("Error parse integer!");
-          // println!("pubs count = {}", split[3]);
-
-          let mut pubs: Vec<u8> = vec![];
-          for n in 0..pubs_count {
-            // println!("{}", n);
-            // println!("{}", split[4 + n as usize]);
-            let key = hex::decode(split[4 + n as usize]).expect("Error parse public key!");
-            // println!("{:x?}", key);
-
-            let mut converted_key: [u8; 32] = [0; 32];
-            for i in 0..32 {
-              // pubs.push(key[i]);
-              converted_key[i] = key[i];
-            }
-            // println!("n = {}", n);
-            // println!("n = {:x?}", converted_key);
-            pubs.extend(&converted_key);
-          }
-
-          // println!("pubs.len() = {}", pubs.len());
-          // println!("{}", 32 * pubs_count);
-
-          // assert!(pubs.len() == (32 * pubs_count) as usize);
-
-          // let sig = hex::decode(split[4 + pubs_count as usize]).expect("Error parse siginatures!");
-          // println!("{}", sig.len());
-          // println!("{}", pubs_count);
-          // let mut siginatures : Vec<[u8; 64]> = vec![];
-          // for n in 0..pubs_count {
-          //   let mut n_sig : [u8;64] = [0; 64];
-          //   for i in 0..64 {
-          //     let idx = n * 64 + (i as u64);
-          //     n_sig[i] = sig[idx as usize];
-          //   }
-          //   siginatures
-          // }
-
-          // println!("{:?}", split);
-          // let expected = split[5 + pubs_count as usize] == "true";
-          // println!("expected = {}", expected);
-          // let actual = is_ring_signature(pre_hash.as_slice(), key_image.as_slice(), pubs.as_slice(), pubs_count as usize, sig.as_slice());
-          // assert!(expected == actual);
+        "hash_to_point" => {
+          let hash = hex::decode(split[1]).expect("Error parse prefix hash");
+          let expected = hex::decode(split[2]).expect("Error parse public key");
+          let actual = EllipticCurvePoint::from_hash(hash.as_slice());
+          assert!(expected == actual);
         }
         _ => {}
       }

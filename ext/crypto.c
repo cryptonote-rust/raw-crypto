@@ -477,3 +477,9 @@ void generate_ring_signature(const uint8_t *prefix_hash, const uint8_t *image,
                              image,
                              (const public_key_t *const *)pubs, pubs_count, sec, sec_index, sig);
 }
+
+void hash_to_point(const uint8_t *h, uint8_t *res) {
+  ge_p2 point;
+  ge_fromfe_frombytes_vartime(&point, h);
+  ge_tobytes(res, &point);
+}
