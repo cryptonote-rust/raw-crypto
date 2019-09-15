@@ -34,6 +34,12 @@ extern "C" {
     secret_key: *const u8,
     signature: *mut u8,
   );
+
+  fn check_signature(
+    prefix_hash: *const u8,
+    public_key: *const u8,
+    signature: *const u8,
+  ) -> bool;
 }
 
 pub struct Key {}
@@ -131,5 +137,19 @@ impl Key {
       );
     }
     signature
+  }
+
+  pub fn check_signature(
+    prefix_hash: &[u8; 32],
+    public_key: &[u8; 32],
+    signature: &[u8; 64],
+  ) -> bool {
+    unsafe {
+      return check_signature(
+        prefix_hash.as_ptr(),
+        public_key.as_ptr(),
+        signature.as_ptr(),
+      );
+    }
   }
 }

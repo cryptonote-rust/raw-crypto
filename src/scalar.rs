@@ -48,6 +48,14 @@ mod tests {
     fixed
   }
 
+  fn to_fixed_64(variant: Vec<u8>) -> [u8; 64] {
+    let mut fixed: [u8; 64] = [0; 64];
+    for i in 0..64 {
+      fixed[i] = variant[i];
+    }
+    fixed
+  }
+
   #[test]
   fn should_to_hash() {
     let bytes = hex::decode("2ace").expect("Error parse scalar");
@@ -245,6 +253,16 @@ mod tests {
           for i in 0..64 {
             assert!(expected[i] == actual[i]);
           }
+        }
+        "check_signature" => {
+          let prefix_hash = hex::decode(split[1]).expect("Error parse prefix hash");
+          let public_key = hex::decode(split[2]).expect("Error parse public key");
+          let signature = hex::decode(split[3]).expect("Error parse secret key");
+          let expected = split[4] == "true";
+
+          let actual = Key::check_signature(&to_fixed_32(prefix_hash), &
+          to_fixed_32(public_key), &to_fixed_64(signature));
+          assert!(expected == actual);
         }
         "check_ring_signature" => {
           let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
