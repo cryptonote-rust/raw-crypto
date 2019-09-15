@@ -203,6 +203,29 @@ mod tests {
           let derived = Key::derive_secret_key(&fixed_derivation, out_index as u64, &fixed_base);
           assert!(derived == expected.as_slice());
         }
+        "underive_public_key" => {
+          let derivation = hex::decode(split[1]).expect("Error parse derivation");
+          let out_index = split[2].parse::<u32>().unwrap();
+          let public_key = hex::decode(split[3]).expect("Error parse public key");
+          let expected1 = split[4] == "true";
+          let mut fixed_derivation: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_derivation[i] = derivation[i];
+          }
+
+          let mut fixed_base: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_base[i] = public_key[i];
+          }
+          let derived = Key::underive_public_key(&fixed_derivation, out_index as u64, &fixed_base);
+
+          if expected1 {
+            let expected2 = hex::decode(split[5]).expect("Error parse expected derived");
+            assert!(expected2.as_slice() == derived);
+          } else {
+            assert!(derived == [0; 32]);
+          }
+        }
         "check_ring_signature" => {
           let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
           // println!("pre hash = {}", split[1]);

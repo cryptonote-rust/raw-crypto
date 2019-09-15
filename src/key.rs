@@ -15,6 +15,12 @@ extern "C" {
     base_public_key: *const u8,
     derived_key: *mut u8,
   ) -> bool;
+  fn underive_public_key(
+    derivation: *const u8,
+    output_index: u64,
+    base_public_key: *const u8,
+    derived_key: *mut u8,
+  ) -> bool;
   fn derive_secret_key(
     derivation: *const u8,
     output_index: u64,
@@ -61,6 +67,23 @@ impl Key {
     let mut derived: [u8; 32] = [0; 32];
     unsafe {
       derive_public_key(
+        derivation.as_ptr(),
+        output_index,
+        base_public_key.as_ptr(),
+        derived.as_mut_ptr(),
+      );
+    }
+    derived
+  }
+
+  pub fn underive_public_key(
+    derivation: &[u8; 32],
+    output_index: u64,
+    base_public_key: &[u8; 32],
+  ) -> [u8; 32] {
+    let mut derived: [u8; 32] = [0; 32];
+    unsafe {
+      underive_public_key(
         derivation.as_ptr(),
         output_index,
         base_public_key.as_ptr(),
