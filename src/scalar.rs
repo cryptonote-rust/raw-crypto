@@ -304,6 +304,13 @@ mod tests {
           let actual = EllipticCurveScalar::from_hash(public_key.as_slice());
           assert!(expected == actual);
         }
+        "generate_key_image" => {
+          let public_key = hex::decode(split[1]).expect("Error parse prefix hash");
+          let secret_key = hex::decode(split[2]).expect("Error parse public key");
+          let expected = hex::decode(split[3]).expect("Error parse public key");
+          let actual = Key::generate_key_image(&to_fixed_32(public_key), &to_fixed_32(secret_key));
+          assert!(expected == actual);
+        }
         _ => {}
       }
     }

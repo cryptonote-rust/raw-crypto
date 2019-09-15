@@ -35,11 +35,9 @@ extern "C" {
     signature: *mut u8,
   );
 
-  fn check_signature(
-    prefix_hash: *const u8,
-    public_key: *const u8,
-    signature: *const u8,
-  ) -> bool;
+  fn check_signature(prefix_hash: *const u8, public_key: *const u8, signature: *const u8) -> bool;
+
+  fn generate_key_image(public_key: *const u8, secret_key: *const u8, image: *mut u8);
 }
 
 pub struct Key {}
@@ -151,5 +149,13 @@ impl Key {
         signature.as_ptr(),
       );
     }
+  }
+
+  pub fn generate_key_image(public_key: &[u8; 32], secret_key: &[u8; 32]) -> [u8; 32] {
+    let mut image: [u8; 32] = [0; 32];
+    unsafe {
+      generate_key_image(public_key.as_ptr(), secret_key.as_ptr(), image.as_mut_ptr());
+    }
+    image
   }
 }
