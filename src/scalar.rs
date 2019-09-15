@@ -1,5 +1,3 @@
-use super::consts::*;
-
 extern "C" {
   fn check_scalar(scalar: *const u8) -> bool;
   fn random_scalar(secret_key: *mut u8);
@@ -9,11 +7,9 @@ extern "C" {
 }
 
 pub struct EllipticCurveScalar {
-  pub data: [u8; CHACHA_IV_SIZE],
 }
 
 pub struct EllipticCurvePoint {
-  pub data: [u8; CHACHA_IV_SIZE],
 }
 
 impl EllipticCurveScalar {
