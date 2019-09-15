@@ -142,7 +142,7 @@ mod tests {
   #[test]
   fn should_generate_key_and_cipher_contents() {
     let key = ChachaKey::generate(String::from(""));
-    println!("key {:?}", key.data);
+    // println!("key {:?}", key.data);
     assert!(
       key.data
         == [
@@ -152,7 +152,7 @@ mod tests {
     );
 
     let key1 = ChachaKey::generate(String::from("This is a test"));
-    println!("key {:?}", key1.data);
+    // println!("key {:?}", key1.data);
 
     // assert!(key1.data == [97, 48, 56, 52, 102, 48, 49, 100, 49, 52, 51, 55, 97, 48, 57, 99, 54, 57, 56, 53, 52, 48, 49, 98, 54, 48, 100, 52, 51, 53, 53, 52]);
     assert!(
@@ -180,8 +180,8 @@ mod tests {
     ];
     let mut public_key: [u8; 32] = [0; 32];
     Key::secret_to_public(&secret_key, &mut public_key);
-    println!("{:?}", public_key);
-    println!("{:?}", public_key);
+    // println!("{:?}", public_key);
+    // println!("{:?}", public_key);
     assert!(
       public_key
         == [
@@ -237,8 +237,8 @@ mod tests {
     let secret_key = Key::generate_secret_key();
     let mut public_key: [u8; 32] = [0; 32];
     Key::secret_to_public(&secret_key, &mut public_key);
-    println!("{:?}", secret_key);
-    println!("{:?}", public_key);
+    // println!("{:?}", secret_key);
+    // println!("{:?}", public_key);
     assert!(public_key.len() == 32);
     assert!(Key::check_public_key(&public_key));
   }

@@ -46,8 +46,8 @@ mod tests {
     let hash = EllipticCurveScalar::to_hash(bytes.as_slice());
     let expected = hex::decode("427f5090283713a2a8448285f2a22cc8cf5374845766b6370425e2319e40f50d")
       .expect("Error parse scalar");
-    println!("{:0x?}", hash);
-    println!("expected: 427f5090283713a2a8448285f2a22cc8cf5374845766b6370425e2319e40f50d");
+    // println!("{:0x?}", hash);
+    // println!("expected: 427f5090283713a2a8448285f2a22cc8cf5374845766b6370425e2319e40f50d");
     assert!(hash == expected.as_slice());
   }
 
@@ -55,17 +55,17 @@ mod tests {
   fn should_test_scalar() {
     let path = PathBuf::from("./tests/tests.txt");
     let str = canonicalize(path);
-    println!("{:?}", &str);
+    // println!("{:?}", &str);
     let f = File::open(str.unwrap()).unwrap();
     let file = BufReader::new(&f);
     let mut last = String::from("");
     let mut executed = false;
-    for (num, line) in file.lines().enumerate() {
+    for (_num, line) in file.lines().enumerate() {
       let l = line.unwrap();
       let split: Vec<&str> = l.split_whitespace().collect();
       let name = split[0];
       if last != name {
-        println!("{:?}", split[0]);
+        // println!("{:?}", split[0]);
         last = split[0].to_string();
       }
       match name {
@@ -163,12 +163,8 @@ mod tests {
           }
         }
         "derive_public_key" => {
-          println!("{:x?}", split);
           let derivation = hex::decode(split[1]).expect("Error parse derivation");
-          // println!("{:x?}", derivation);
           let out_index = split[2].parse::<u32>().unwrap();
-          // println!("{}", out_index);
-
           let public_key = hex::decode(split[3]).expect("Error parse public key");
           let expected1 = split[4] == "true";
           let mut fixed_derivation: [u8; 32] = [0; 32];
@@ -182,27 +178,30 @@ mod tests {
           }
           let derived = Key::derive_public_key(&fixed_derivation, out_index as u64, &fixed_base);
 
-          if (expected1) {
+          if expected1 {
             let expected2 = hex::decode(split[5]).expect("Error parse expected derived");
-            println!("{:x?}", derived);
             assert!(expected2.as_slice() == derived);
           } else {
-            assert!(derived == [0;32]);
+            assert!(derived == [0; 32]);
           }
-          // let derived
-          // crypto::key_derivation_t derivation;
-          // size_t output_index;
-          // crypto::public_key_t base;
-          // bool expected1, actual1;
-          // crypto::public_key_t expected2, actual2;
-          // get(input, derivation, output_index, base, expected1);
-          // if (expected1) {
-          //   get(input, expected2);
-          // }
-          // actual1 = derive_public_key(derivation, output_index, base, actual2);
-          // if (expected1 != actual1 || (expected1 && expected2 != actual2)) {
-          //   goto error;
-          // }
+        }
+        "derive_secret_key" => {
+          let derivation = hex::decode(split[1]).expect("Error parse derivation");
+          let out_index = split[2].parse::<u32>().unwrap();
+
+          let private_key = hex::decode(split[3]).expect("Error parse public key");
+          let expected = hex::decode(split[4]).expect("Error parse public key");
+          let mut fixed_derivation: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_derivation[i] = derivation[i];
+          }
+
+          let mut fixed_base: [u8; 32] = [0; 32];
+          for i in 0..32 {
+            fixed_base[i] = private_key[i];
+          }
+          let derived = Key::derive_secret_key(&fixed_derivation, out_index as u64, &fixed_base);
+          assert!(derived == expected.as_slice());
         }
         "check_ring_signature" => {
           let pre_hash = hex::decode(split[1]).expect("Error parse pre hash!");
