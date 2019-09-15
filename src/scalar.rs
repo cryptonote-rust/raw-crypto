@@ -40,6 +40,14 @@ mod tests {
     fn setup_random(value: i32);
   }
 
+  fn to_fixed_32(variant: Vec<u8>) -> [u8; 32] {
+    let mut fixed: [u8; 32] = [0; 32];
+    for i in 0..32 {
+      fixed[i] = variant[i];
+    }
+    fixed
+  }
+
   #[test]
   fn should_to_hash() {
     let bytes = hex::decode("2ace").expect("Error parse scalar");
@@ -224,6 +232,18 @@ mod tests {
             assert!(expected2.as_slice() == derived);
           } else {
             assert!(derived == [0; 32]);
+          }
+        }
+        "generate_signature" => {
+          let prefix_hash = hex::decode(split[1]).expect("Error parse prefix hash");
+          let public_key = hex::decode(split[2]).expect("Error parse public key");
+          let secret_key = hex::decode(split[3]).expect("Error parse secret key");
+          let expected = hex::decode(split[4]).expect("Error parse expected signature");
+
+          let actual = Key::generate_signature(&to_fixed_32(prefix_hash), &
+          to_fixed_32(public_key), &to_fixed_32(secret_key));
+          for i in 0..64 {
+            assert!(expected[i] == actual[i]);
           }
         }
         "check_ring_signature" => {

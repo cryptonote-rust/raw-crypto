@@ -27,6 +27,13 @@ extern "C" {
     base_secret_key: *const u8,
     derived_key: *mut u8,
   ) -> bool;
+
+  fn generate_signature(
+    prefix_hash: *const u8,
+    public_key: *const u8,
+    secret_key: *const u8,
+    signature: *mut u8,
+  );
 }
 
 pub struct Key {}
@@ -107,5 +114,22 @@ impl Key {
       );
     }
     derived
+  }
+
+  pub fn generate_signature(
+    prefix_hash: &[u8; 32],
+    public_key: &[u8; 32],
+    secret_key: &[u8; 32],
+  ) -> [u8; 64] {
+    let mut signature: [u8; 64] = [0; 64];
+    unsafe {
+      generate_signature(
+        prefix_hash.as_ptr(),
+        public_key.as_ptr(),
+        secret_key.as_ptr(),
+        signature.as_mut_ptr(),
+      );
+    }
+    signature
   }
 }
