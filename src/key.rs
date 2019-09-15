@@ -38,6 +38,15 @@ extern "C" {
   fn check_signature(prefix_hash: *const u8, public_key: *const u8, signature: *const u8) -> bool;
 
   fn generate_key_image(public_key: *const u8, secret_key: *const u8, image: *mut u8);
+  fn generate_ring_signature(
+    prefix_hash: *const u8,
+    image: *const u8,
+    pubs: *const &[u8;32],
+    pubs_count: usize,
+    sec: *const u8,
+    sec_index: usize,
+    sig: *const u8,
+  );
 }
 
 pub struct Key {}
@@ -157,5 +166,28 @@ impl Key {
       generate_key_image(public_key.as_ptr(), secret_key.as_ptr(), image.as_mut_ptr());
     }
     image
+  }
+
+  pub fn generate_ring_signature(
+    prefix_hash: &[u8; 32],
+    image: &[u8; 32],
+    pubs: &Vec<&[u8; 32]>,
+    pubs_count: usize,
+    sec: &[u8; 32],
+    sec_index: usize,
+  ) -> [u8; 64] {
+    let mut signature: [u8; 64] = [0; 64];
+    unsafe {
+      generate_ring_signature(
+        prefix_hash.as_ptr(),
+        image.as_ptr(),
+        pubs.as_ptr(),
+        pubs_count,
+        sec.as_ptr(),
+        sec_index,
+        signature.as_mut_ptr(),
+      )
+    }
+    signature
   }
 }

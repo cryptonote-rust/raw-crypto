@@ -6,11 +6,9 @@ extern "C" {
   fn hash_to_ec_ex(hash: *const u8, ec: *mut u8);
 }
 
-pub struct EllipticCurveScalar {
-}
+pub struct EllipticCurveScalar {}
 
-pub struct EllipticCurvePoint {
-}
+pub struct EllipticCurvePoint {}
 
 impl EllipticCurveScalar {
   pub fn check(scalar: &[u8; 32]) -> bool {
@@ -72,6 +70,12 @@ mod tests {
       fixed[i] = variant[i];
     }
     fixed
+  }
+
+  fn compare_64(v1: Vec<u8>, v2: [u8; 64]) {
+    for i in 0..64 {
+      assert!(v1[i] == v2[i]);
+    }
   }
 
   #[test]
@@ -306,6 +310,48 @@ mod tests {
           let expected = hex::decode(split[3]).expect("Error parse public key");
           let actual = Key::generate_key_image(&to_fixed_32(public_key), &to_fixed_32(secret_key));
           assert!(expected == actual);
+        }
+        "generate_ring_signature" => {
+          println!("{:x?}", split);
+          let prefix_hash = hex::decode(split[1]).expect("Error parse prefix hash");
+          println!("{:x?}", prefix_hash);
+
+          let image = hex::decode(split[2]).expect("Error parse key image");
+          println!("{:x?}", image);
+
+          let pubs_count = split[3].parse::<usize>().unwrap();
+          println!("{:x?}", pubs_count);
+
+          let mut pubsv: Vec<[u8;32]> = vec![];
+          for i in 0..pubs_count {
+            let public_key = hex::decode(split[(4 + i)]).expect("Error parse public key");
+            println!("{:x?}", public_key);
+
+            let fixed = to_fixed_32(public_key);
+
+            pubsv.push(fixed);
+          }
+          let mut pubs: Vec<&[u8;32]> = pubsv.iter().collect();
+
+          let secret_key = hex::decode(split[(4 + pubs_count)]).expect("Error parse secret key");
+          println!("{:x?}", secret_key);
+
+          let secret_index = split[(5 + pubs_count)].parse::<usize>().unwrap();
+          println!("{:x?}", secret_index);
+
+          let expected = hex::decode(split[(6 + pubs_count)]).expect("Error parse signatures");
+          println!("{:x?}", expected);
+
+          let actual = Key::generate_ring_signature(
+            &to_fixed_32(prefix_hash),
+            &to_fixed_32(image),
+            &pubs,
+            pubs_count,
+            &to_fixed_32(secret_key),
+            secret_index,
+          );;
+
+          compare_64(expected, actual);
         }
         _ => {}
       }
