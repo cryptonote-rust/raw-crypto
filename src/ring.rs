@@ -75,7 +75,6 @@ impl Ring {
         for j in 0..64 {
           sign[j] = signatures[i * 64 + j];
         }
-        println!("{:x?}", sign.as_ptr());
         sig_push(i, sign.as_ptr());
       }
       vec_clear();

@@ -335,8 +335,6 @@ mod tests {
           }
           let signatures = hex::decode(split[(4 + pubs_count)]).expect("Error parse secret key");
           let expected = split[(5 + pubs_count)] == "true";
-          println!("{:x?}", split);
-          if (expected) {
           let actual = Ring::check_signature(
             &to_fixed_32(prefix_hash),
             &to_fixed_32(image),
@@ -344,8 +342,7 @@ mod tests {
             pubs_count,
             &signatures
           );
-          }
-          // assert!(expected == actual);
+          assert!(expected == actual);
         }
         _ => {}
       }
