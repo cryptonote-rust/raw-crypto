@@ -1,6 +1,7 @@
 use rand::Rng;
 pub mod consts;
 pub mod key;
+pub mod ring;
 pub mod scalar;
 
 use consts::*;

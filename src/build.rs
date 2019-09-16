@@ -10,7 +10,7 @@ fn main() {
             .flag_if_supported("-maes");
     }
 
-    build.warnings(false);
+    // build.warnings(false);
     build
         .define("__RUST_RAW_CRYPTO__", Some("1"))
         .file("ext/aesb.c")
@@ -33,4 +33,9 @@ fn main() {
         .file("ext/tree-hash.c")
         .file("ext/crypto.c")
         .compile("crypto");
+    let mut buildcpp = cc::Build::new();
+    buildcpp.cpp(true);
+    buildcpp
+    .file("ext/vec.cpp")
+    .compile("vec");
 }

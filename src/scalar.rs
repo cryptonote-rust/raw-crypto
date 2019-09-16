@@ -51,6 +51,7 @@ mod tests {
   use std::path::PathBuf;
   extern crate hex;
   use super::super::key::Key;
+  use super::super::ring::Ring;
 
   extern "C" {
     fn setup_random(value: i32);
@@ -72,11 +73,11 @@ mod tests {
     fixed
   }
 
-  fn compare_64(v1: Vec<u8>, v2: [u8; 64]) {
-    for i in 0..64 {
-      assert!(v1[i] == v2[i]);
-    }
-  }
+  // fn compare_64(v1: Vec<u8>, v2: [u8; 64]) {
+  //   for i in 0..64 {
+  //     assert!(v1[i] == v2[i]);
+  //   }
+  // }
 
   #[test]
   fn should_to_hash() {
@@ -84,8 +85,6 @@ mod tests {
     let hash = EllipticCurveScalar::to_hash(bytes.as_slice());
     let expected = hex::decode("427f5090283713a2a8448285f2a22cc8cf5374845766b6370425e2319e40f50d")
       .expect("Error parse scalar");
-    // println!("{:0x?}", hash);
-    // println!("expected: 427f5090283713a2a8448285f2a22cc8cf5374845766b6370425e2319e40f50d");
     assert!(hash == expected.as_slice());
   }
 
@@ -93,7 +92,6 @@ mod tests {
   fn should_test_scalar() {
     let path = PathBuf::from("./tests/tests.txt");
     let str = canonicalize(path);
-    // println!("{:?}", &str);
     let f = File::open(str.unwrap()).unwrap();
     let file = BufReader::new(&f);
     let mut last = String::from("");
@@ -103,7 +101,6 @@ mod tests {
       let split: Vec<&str> = l.split_whitespace().collect();
       let name = split[0];
       if last != name {
-        // println!("{:?}", split[0]);
         last = split[0].to_string();
       }
       match name {
@@ -143,15 +140,11 @@ mod tests {
           assert!(hash == expected.as_slice());
         }
         "generate_keys" => {
-          // println!("{}", split[1]);
-          // println!("{}", split[2]);
           let public_key = hex::decode(split[1]).expect("Error parse expected");
           let private_key = hex::decode(split[2]).expect("Error parse expected");
           let mut generated_public_key: [u8; 32] = [0; 32];
           let mut generated_private_key: [u8; 32] = [0; 32];
           Key::generate_key_pair(&mut generated_public_key, &mut generated_private_key);
-          // println!("generated public key: {:0x?}", generated_public_key);
-          // println!("generated private key: {:0x?}", generated_private_key);
           assert!(public_key.as_slice() == generated_public_key);
           assert!(private_key.as_slice() == generated_private_key);
         }
@@ -312,46 +305,28 @@ mod tests {
           assert!(expected == actual);
         }
         "generate_ring_signature" => {
-          println!("{:x?}", split);
           let prefix_hash = hex::decode(split[1]).expect("Error parse prefix hash");
-          println!("{:x?}", prefix_hash);
-
           let image = hex::decode(split[2]).expect("Error parse key image");
-          println!("{:x?}", image);
-
           let pubs_count = split[3].parse::<usize>().unwrap();
-          println!("{:x?}", pubs_count);
 
-          let mut pubsv: Vec<[u8;32]> = vec![];
+          let mut pubsv: Vec<[u8; 32]> = vec![];
           for i in 0..pubs_count {
             let public_key = hex::decode(split[(4 + i)]).expect("Error parse public key");
-            println!("{:x?}", public_key);
-
             let fixed = to_fixed_32(public_key);
-
             pubsv.push(fixed);
           }
-          let mut pubs: Vec<&[u8;32]> = pubsv.iter().collect();
-
           let secret_key = hex::decode(split[(4 + pubs_count)]).expect("Error parse secret key");
-          println!("{:x?}", secret_key);
-
           let secret_index = split[(5 + pubs_count)].parse::<usize>().unwrap();
-          println!("{:x?}", secret_index);
-
           let expected = hex::decode(split[(6 + pubs_count)]).expect("Error parse signatures");
-          println!("{:x?}", expected);
-
-          let actual = Key::generate_ring_signature(
+          let actual = Ring::generate_signature(
             &to_fixed_32(prefix_hash),
             &to_fixed_32(image),
-            &pubs,
+            &pubsv,
             pubs_count,
             &to_fixed_32(secret_key),
             secret_index,
-          );;
-
-          compare_64(expected, actual);
+          );
+          assert!(expected == actual);
         }
         _ => {}
       }
