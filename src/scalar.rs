@@ -139,28 +139,20 @@ mod tests {
           let mut generated_public_key: [u8; 32] = [0; 32];
           let mut generated_private_key: [u8; 32] = [0; 32];
           Key::generate_key_pair(&mut generated_public_key, &mut generated_private_key);
-          assert!(public_key.as_slice() == generated_public_key);
-          assert!(private_key.as_slice() == generated_private_key);
+          assert!(to_fixed_32(public_key) == generated_public_key);
+          assert!(to_fixed_32(private_key) == generated_private_key);
         }
         "check_key" => {
           let public_key = hex::decode(split[1]).expect("Error parse expected");
           assert!(public_key.len() == 32);
-          let mut fixed_public_key: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_public_key[i] = public_key[i];
-          }
           let expected = split[2] == "true";
-          assert!(Key::check_public_key(&fixed_public_key) == expected);
+          assert!(Key::check_public_key(&to_fixed_32(public_key)) == expected);
         }
         "secret_key_to_public_key" => {
           let secret_key = hex::decode(split[1]).expect("Error parse expected");
-          let mut fixed_secret_key: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_secret_key[i] = secret_key[i];
-          }
           let expected1 = split[2] == "true";
           let mut public_key: [u8; 32] = [0; 32];
-          let actual1 = Key::secret_to_public(&fixed_secret_key, &mut public_key);
+          let actual1 = Key::secret_to_public(&to_fixed_32(secret_key), &mut public_key);
           assert!(expected1 == actual1);
           if expected1 == true {
             let expected2 = hex::decode(split[3]).expect("Error parse expected");
@@ -169,17 +161,9 @@ mod tests {
         }
         "generate_key_derivation" => {
           let public_key = hex::decode(split[1]).expect("Error parse expected");
-          let mut fixed_public_key: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_public_key[i] = public_key[i];
-          }
           let secret_key = hex::decode(split[2]).expect("Error parse expected");
-          let mut fixed_secret_key: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_secret_key[i] = secret_key[i];
-          }
           let expected1 = split[3] == "true";
-          let derived = Key::generate_key_derivation(&fixed_public_key, &fixed_secret_key);
+          let derived = Key::generate_key_derivation(&to_fixed_32(public_key), &to_fixed_32(secret_key));
           if expected1 {
             let expected2 = hex::decode(split[4]).expect("Error parse expected");
             assert!(derived == expected2.as_slice());
@@ -192,16 +176,7 @@ mod tests {
           let out_index = split[2].parse::<u32>().unwrap();
           let public_key = hex::decode(split[3]).expect("Error parse public key");
           let expected1 = split[4] == "true";
-          let mut fixed_derivation: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_derivation[i] = derivation[i];
-          }
-
-          let mut fixed_base: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_base[i] = public_key[i];
-          }
-          let derived = Key::derive_public_key(&fixed_derivation, out_index as u64, &fixed_base);
+          let derived = Key::derive_public_key(&to_fixed_32(derivation), out_index as u64, &to_fixed_32(public_key));
 
           if expected1 {
             let expected2 = hex::decode(split[5]).expect("Error parse expected derived");
@@ -216,16 +191,7 @@ mod tests {
 
           let private_key = hex::decode(split[3]).expect("Error parse public key");
           let expected = hex::decode(split[4]).expect("Error parse public key");
-          let mut fixed_derivation: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_derivation[i] = derivation[i];
-          }
-
-          let mut fixed_base: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_base[i] = private_key[i];
-          }
-          let derived = Key::derive_secret_key(&fixed_derivation, out_index as u64, &fixed_base);
+          let derived = Key::derive_secret_key(&to_fixed_32(derivation), out_index as u64, &to_fixed_32(private_key));
           assert!(derived == expected.as_slice());
         }
         "underive_public_key" => {
@@ -233,16 +199,7 @@ mod tests {
           let out_index = split[2].parse::<u32>().unwrap();
           let public_key = hex::decode(split[3]).expect("Error parse public key");
           let expected1 = split[4] == "true";
-          let mut fixed_derivation: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_derivation[i] = derivation[i];
-          }
-
-          let mut fixed_base: [u8; 32] = [0; 32];
-          for i in 0..32 {
-            fixed_base[i] = public_key[i];
-          }
-          let derived = Key::underive_public_key(&fixed_derivation, out_index as u64, &fixed_base);
+          let derived = Key::underive_public_key(&to_fixed_32(derivation), out_index as u64, &to_fixed_32(public_key));
 
           if expected1 {
             let expected2 = hex::decode(split[5]).expect("Error parse expected derived");
