@@ -123,7 +123,7 @@ mod tests {
           }
         }
         "hash_to_scalar" => {
-          let mut bytes: Vec<u8>;
+          let bytes: Vec<u8>;
           if split[1] == "x" {
             bytes = hex::decode("").expect("Error parse scalar");
           } else {
