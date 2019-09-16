@@ -11,8 +11,7 @@ build = "src/build.rs"
 [dependencies]
 libc = "0.2.45"
 rand = "0.6"
-hex = "*"
-
+hex = "0.3.2"
 
 [build-dependencies]
 cc = "1.0.26"
