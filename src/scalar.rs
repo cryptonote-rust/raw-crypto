@@ -73,12 +73,6 @@ mod tests {
     fixed
   }
 
-  // fn compare_64(v1: Vec<u8>, v2: [u8; 64]) {
-  //   for i in 0..64 {
-  //     assert!(v1[i] == v2[i]);
-  //   }
-  // }
-
   #[test]
   fn should_to_hash() {
     let bytes = hex::decode("2ace").expect("Error parse scalar");
@@ -327,6 +321,31 @@ mod tests {
             secret_index,
           );
           assert!(expected == actual);
+        }
+        "check_ring_signature" => {
+          let prefix_hash = hex::decode(split[1]).expect("Error parse prefix hash");
+          let image = hex::decode(split[2]).expect("Error parse key image");
+          let pubs_count = split[3].parse::<usize>().unwrap();
+
+          let mut pubsv: Vec<[u8; 32]> = vec![];
+          for i in 0..pubs_count {
+            let public_key = hex::decode(split[(4 + i)]).expect("Error parse public key");
+            let fixed = to_fixed_32(public_key);
+            pubsv.push(fixed);
+          }
+          let signatures = hex::decode(split[(4 + pubs_count)]).expect("Error parse secret key");
+          let expected = split[(5 + pubs_count)] == "true";
+          println!("{:x?}", split);
+          if (expected) {
+          let actual = Ring::check_signature(
+            &to_fixed_32(prefix_hash),
+            &to_fixed_32(image),
+            &pubsv,
+            pubs_count,
+            &signatures
+          );
+          }
+          // assert!(expected == actual);
         }
         _ => {}
       }

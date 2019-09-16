@@ -1,8 +1,8 @@
 #include <cassert>
 #include <vector>
-using namespace std;
-
 #include "types.h"
+
+using namespace std;
 
 vector<public_key_t> vpubs;
 vector<const public_key_t *> pubs;
@@ -10,6 +10,7 @@ size_t vec_size;
 
 extern "C"
 {
+
   void vec_resize(size_t new_size)
   {
     vec_size = new_size;
