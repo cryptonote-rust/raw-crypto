@@ -13,13 +13,16 @@ Raw Crypto Library is to provide crypto implementations in C/C++ with rust. Curr
 Now this library provide the follow interfaces:
 
 1. Hash
+
 Hash::slow -> cn_slow_hash
 Hash::fast -> cn_fast_hash
 
 2. Chacha(with ChachaKey, ChachaIV generators)
+
 Chacha::generate -> chacha8
 
 3. Key
+
 Key::generate_private_key -> generate_private_key
 Key::secret_to_public -> secret_key_to_public_key
 Key::generate_key_pair -> generate_keys
@@ -33,10 +36,12 @@ Key::check_signature -> check_signature
 Key::generate_key_image -> generate_key_image
 
 4. Ring
+
 Ring::generate_signature -> generate_ring_signature
 Ring::check_signature -> check_ring_signature
 
 5. Scalars
+
 EllipticCurveScalar::random -> random_scalar
 EllipticCurveScalar::check -> check_scalar
 EllipticCurveScalar::to_hash -> hash_to_scalar
