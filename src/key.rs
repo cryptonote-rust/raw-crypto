@@ -159,3 +159,39 @@ impl Key {
     image
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn should_get_public_key_from_secret_key() {
+    let secret_key = [
+      50, 228, 229, 247, 39, 151, 194, 252, 14, 45, 218, 78, 128, 230, 27, 208, 9, 57, 52, 163, 5,
+      175, 8, 201, 211, 185, 66, 113, 88, 68, 170, 8,
+    ];
+    let mut public_key: [u8; 32] = [0; 32];
+    Key::secret_to_public(&secret_key, &mut public_key);
+    // println!("{:?}", public_key);
+    // println!("{:?}", public_key);
+    assert!(
+      public_key
+        == [
+          81, 76, 248, 201, 237, 192, 109, 39, 58, 159, 67, 13, 120, 203, 91, 70, 36, 216, 162,
+          222, 0, 100, 243, 152, 32, 48, 89, 129, 252, 169, 180, 36
+        ]
+    );
+    assert!(Key::check_public_key(&public_key));
+  }
+
+  #[test]
+  fn should_get_public_key_from_generated_secret_key() {
+    let secret_key = Key::generate_secret_key();
+    let mut public_key: [u8; 32] = [0; 32];
+    Key::secret_to_public(&secret_key, &mut public_key);
+    // println!("{:?}", secret_key);
+    // println!("{:?}", public_key);
+    assert!(public_key.len() == 32);
+    assert!(Key::check_public_key(&public_key));
+  }
+}
