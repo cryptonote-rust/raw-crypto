@@ -15,6 +15,7 @@ Now this library provide the follow interfaces:
 1. Hash  
 Hash::slow -> cn_slow_hash  
 Hash::fast -> cn_fast_hash  
+Hash::check_with_difficulty -> cryptonote::check_hash
 
 2. Chacha(with ChachaKey, ChachaIV generators)  
 Chacha::generate -> chacha8  
@@ -32,8 +33,7 @@ Key::generate_signature -> generate_signature
 Key::check_signature -> check_signature  
 Key::generate_key_image -> generate_key_image  
 
-4. Ring
-
+4. Ring  
 Ring::generate_signature -> generate_ring_signature
 Ring::check_signature -> check_ring_signature
 

@@ -36,6 +36,7 @@ fn main() {
     let mut buildcpp = cc::Build::new();
     buildcpp.cpp(true);
     buildcpp
+    .file("ext/difficulty.cpp")
     .file("ext/vec_pub.cpp")
     .file("ext/vec_signature.cpp")
     .compile("vec");

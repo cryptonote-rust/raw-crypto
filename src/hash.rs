@@ -1,6 +1,7 @@
 extern "C" {
   fn cn_slow_hash(data: *const u8, length: usize, hash: *mut u8, variant: usize, prehashed: usize);
   fn cn_fast_hash(data: *const u8, length: usize, hash: *mut u8);
+  fn check_hash(hash: *const [u8; 32], difficulty: u64) -> bool;
 }
 
 pub struct Hash {}
@@ -18,11 +19,22 @@ impl Hash {
     }
     hash
   }
+  pub fn check_with_difficulty(hash: &[u8; 32], difficulty: u64) -> bool {
+    unsafe {
+      return check_hash(hash, difficulty);
+    }
+  }
 }
 
 #[cfg(test)]
 mod tests {
   use super::*;
+
+
+  #[test]
+  fn should_check_hash_with_difficulty() {
+    assert!(Hash::check_with_difficulty(&[0, 223, 74, 253, 65, 221, 188, 172, 253, 50,122, 246, 173, 212,162, 103, 13, 174, 254, 199, 175, 49, 254, 177, 181, 91, 56, 9, 98, 1, 0, 0], 10343869));
+  }
 
   #[test]
   fn should_get_fast_hash() {
@@ -41,6 +53,7 @@ mod tests {
           129, 38, 117, 210, 237, 178, 168, 52, 82, 247, 162, 80
         ]
     );
+
     let input = [
       50, 228, 229, 247, 39, 151, 194, 252, 14, 45, 218, 78, 128, 230, 27, 208, 9, 57, 52, 163, 5,
       175, 8, 201, 211, 185, 66, 113, 88, 68, 170, 8,
