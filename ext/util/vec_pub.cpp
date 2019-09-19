@@ -1,6 +1,6 @@
 #include <cassert>
 #include <vector>
-#include "types.h"
+#include "../crypto/types.h"
 
 using namespace std;
 

@@ -3,7 +3,7 @@
 #include <iostream>
 using namespace std;
 
-#include "types.h"
+#include "../crypto/types.h"
 
 vector<signature_t> signatures;
 size_t sig_size;
