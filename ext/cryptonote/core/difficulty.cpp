@@ -8,9 +8,8 @@
 #include <cstdint>
 #include <vector>
 
-#include "../crypto/util.h"
-#include "../crypto/types.h"
-using std::uint64_t;
+#include "crypto/util.h"
+#include "crypto/types.h"
 
 extern "C"
 {

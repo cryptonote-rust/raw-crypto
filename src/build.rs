@@ -36,7 +36,8 @@ fn main() {
     let mut buildcpp = cc::Build::new();
     buildcpp.cpp(true);
     buildcpp
-    .file("ext/cryptonote/difficulty.cpp")
+    .include("ext/")
+    .file("ext/cryptonote/core/difficulty.cpp")
     .file("ext/util/vec_pub.cpp")
     .file("ext/util/vec_signature.cpp")
     .compile("vec");
