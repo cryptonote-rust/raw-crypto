@@ -17,20 +17,35 @@ extern "C" {
 
 #[repr(C)]
 pub struct Difficulty {
-  target: u8,  // seconds
-  cut: u8,     //  timestamps to cut after sorting
-  lag: u16,    //
-  window: u32, // expected numbers of blocks per day
+  pub target: u8,  // seconds
+  pub cut: u8,     //  timestamps to cut after sorting
+  pub lag: u16,    //
+  pub window: u32, // expected numbers of blocks per day
 }
 
 impl From<&Difficulty> for u64 {
-  fn from(data: &Difficulty) -> Self {
+  fn from(data: &Difficulty) -> u64 {
     let mut ret: u64;
     ret = (data.window as u64) << 32;
     ret += (data.lag as u64) << 16;
     ret += (data.cut as u64) << 8;
     ret += data.target as u64;
     ret
+  }
+}
+
+impl From<&u64> for Difficulty {
+  fn from(data: &u64) -> Difficulty {
+    let target = (data & 0xFF) as u8;
+    let cut = (data >> 8) as u8 & 0xFF as u8;
+    let lag = (data >> 16) as u16 & 0xFFFF as u16;
+    let window = (data >> 32) as u32;
+    Difficulty {
+      target,
+      cut,
+      lag,
+      window
+    }
   }
 }
 
@@ -65,6 +80,15 @@ mod tests {
       cut: 60,
       lag: 15,
     };
+    let diffu64 = u64::from(&diff);
+
+    let diff1 = Difficulty::from(&diffu64);
+
+    assert!(diff1.window == diff.window);
+    assert!(diff1.target == diff.target);
+    assert!(diff1.cut == diff.cut);
+    assert!(diff1.lag == diff.lag);
+
     let path = PathBuf::from("./tests/difficulty.txt");
     let str = canonicalize(path);
     let f = File::open(str.unwrap()).unwrap();
