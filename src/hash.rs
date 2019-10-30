@@ -133,4 +133,20 @@ mod tests {
         ]
     );
   }
+
+  #[test]
+  fn should_test_slow_hash() {
+    let path = PathBuf::from("./tests/hash/tests-slow.txt");
+    let str = canonicalize(path);
+    let f = File::open(str.unwrap()).unwrap();
+    let file = BufReader::new(&f);
+    for (_num, line) in file.lines().enumerate() {
+      let l = line.unwrap();
+      let split: Vec<&str> = l.split_whitespace().collect();
+      let expected = hex::decode(split[0]).expect("Error parse scalar");
+      let plain = hex::decode(split[1]).expect("Error parse scalar");
+      let actual = Hash::slow(&plain);
+      assert!(actual == expected.as_slice());
+    }
+  }
 }
