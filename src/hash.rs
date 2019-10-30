@@ -13,12 +13,17 @@ impl Hash {
     hash
   }
   pub fn slow(input: &Vec<u8>) -> [u8; 32] {
+    return Hash::slow_with_variant(input, 0);
+  }
+
+  pub fn slow_with_variant(input: &Vec<u8>, variant: usize) -> [u8; 32] {
     let mut hash: [u8; 32] = [0; 32];
     unsafe {
-      cn_slow_hash(input.as_ptr(), input.len(), hash.as_mut_ptr(), 0, 0);
+      cn_slow_hash(input.as_ptr(), input.len(), hash.as_mut_ptr(), variant, 0);
     }
     hash
   }
+
   pub fn check_with_difficulty(hash: &[u8; 32], difficulty: u64) -> bool {
     unsafe {
       return check_hash(hash, difficulty);
@@ -29,11 +34,63 @@ impl Hash {
 #[cfg(test)]
 mod tests {
   use super::*;
-
+  use std::fs::{canonicalize, File};
+  use std::io::{prelude::*, BufReader};
+  use std::path::PathBuf;
 
   #[test]
   fn should_check_hash_with_difficulty() {
-    assert!(Hash::check_with_difficulty(&[0, 223, 74, 253, 65, 221, 188, 172, 253, 50,122, 246, 173, 212,162, 103, 13, 174, 254, 199, 175, 49, 254, 177, 181, 91, 56, 9, 98, 1, 0, 0], 10343869));
+    assert!(Hash::check_with_difficulty(
+      &[
+        0, 223, 74, 253, 65, 221, 188, 172, 253, 50, 122, 246, 173, 212, 162, 103, 13, 174, 254,
+        199, 175, 49, 254, 177, 181, 91, 56, 9, 98, 1, 0, 0
+      ],
+      10343869
+    ));
+  }
+
+  #[test]
+
+  fn should_test_fast() {
+    let path = PathBuf::from("./tests/tests-fast.txt");
+    let str = canonicalize(path);
+    let f = File::open(str.unwrap()).unwrap();
+    let file = BufReader::new(&f);
+    for (_num, line) in file.lines().enumerate() {
+      let l = line.unwrap();
+      let split: Vec<&str> = l.split_whitespace().collect();
+      let expected = hex::decode(split[0]).expect("Error parse expected");
+      let plain: Vec<u8>;
+      if split[1] == "x" {
+        plain = hex::decode("").expect("Error parse scalar");
+      } else {
+        plain = hex::decode(split[1]).expect("Error parse scalar");
+      }
+      let hash = Hash::fast(&plain);
+      assert!(hash == expected.as_slice());
+    }
+  }
+
+  #[test]
+
+  fn should_test_slow() {
+    let path = PathBuf::from("./tests/tests-slow.txt");
+    let str = canonicalize(path);
+    let f = File::open(str.unwrap()).unwrap();
+    let file = BufReader::new(&f);
+    for (_num, line) in file.lines().enumerate() {
+      let l = line.unwrap();
+      let split: Vec<&str> = l.split_whitespace().collect();
+      let expected = hex::decode(split[0]).expect("Error parse expected");
+      let plain: Vec<u8>;
+      if split[1] == "x" {
+        plain = hex::decode("").expect("Error parse scalar");
+      } else {
+        plain = hex::decode(split[1]).expect("Error parse scalar");
+      }
+      let hash = Hash::slow(&plain);
+      assert!(hash == expected.as_slice());
+    }
   }
 
   #[test]
