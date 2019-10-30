@@ -12,11 +12,11 @@ impl Hash {
     unsafe { cn_fast_hash(data.as_ptr(), data.len(), hash.as_mut_ptr()) }
     hash
   }
-  pub fn slow(input: &Vec<u8>) -> [u8; 32] {
+  pub fn slow(input: &[u8]) -> [u8; 32] {
     return Hash::slow_with_variant(input, 0);
   }
 
-  pub fn slow_with_variant(input: &Vec<u8>, variant: usize) -> [u8; 32] {
+  pub fn slow_with_variant(input: &[u8], variant: usize) -> [u8; 32] {
     let mut hash: [u8; 32] = [0; 32];
     unsafe {
       cn_slow_hash(input.as_ptr(), input.len(), hash.as_mut_ptr(), variant, 0);
