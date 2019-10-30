@@ -2,7 +2,7 @@
 name = "cryptonote-raw-crypto"
 version = "0.5.5"
 authors = ["calidion <calidion@gmail.com>"]
-edition = "2019"
+edition = "2018"
 license = "GPL-3.0-or-later"
 description = "Cryptography Primitives for Cryptonote"
 
