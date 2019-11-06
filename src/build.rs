@@ -39,6 +39,7 @@ fn main() {
     .flag("-std=c++11")
     .include("ext/")
     .file("ext/cryptonote/core/difficulty.cpp")
+    .file("ext/cryptonote/core/util/amount.cpp")
     .file("ext/util/vec_pub.cpp")
     .file("ext/util/vec_signature.cpp")
     .compile("vec");
