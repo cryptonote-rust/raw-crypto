@@ -38,6 +38,8 @@ impl Ring {
     sec: &[u8; 32],
     sec_index: usize,
   ) -> Vec<u8> {
+    assert!(pubs_count <= pubs.len());
+    assert!(sec_index < pubs.len());
     let mut signature: Vec<u8> = vec![0; pubs_count * 64];
     unsafe {
       vec_clear();
